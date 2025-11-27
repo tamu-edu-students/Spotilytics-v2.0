@@ -137,7 +137,13 @@ class PagesController < ApplicationController
   end
 
   def fetch_top_tracks(limit:)
-    spotify_client.top_tracks(limit: limit, time_range: "long_term")
+    tracks = spotify_client.top_tracks(limit: limit, time_range: "long_term")
+    user_id = session.dig(:spotify_user, "id")
+    if user_id.present?
+      hidden = hidden_top_tracks_for_user(user_id)
+      tracks = tracks.reject { |t| hidden["long_term"].include?(t.id) }
+    end
+    tracks
   end
 
   def fetch_followed_artists(limit:)
