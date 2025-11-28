@@ -24,5 +24,5 @@ Feature: Recommendations
   Scenario: Create playlist from recommendations
     And Spotify returns recommendation data
     When I visit the recommendations page
-    And I press "Create playlist"
-    And I should see a flash message matching /Playlist created/i
+    And I click "Create playlist"
+    And I should see "Playlist created on Spotify"
