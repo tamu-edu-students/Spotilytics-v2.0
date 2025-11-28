@@ -121,10 +121,52 @@ class PlaylistsController < ApplicationController
       return render :new
     end
 
-    query = params[:song_query].to_s.strip
-    if query.blank?
-      flash.now[:alert] = "Enter a song name to search and add."
-      render :new, status: :unprocessable_entity and return
+    bulk_button   = params[:bulk_add].present?
+    single_button = params[:single_add].present?
+    bulk_input    = params[:bulk_songs].to_s
+    query         = params[:song_query].to_s.strip
+
+    if bulk_button
+      titles = bulk_input.split(",").map { |t| t.strip }.reject(&:blank?)
+      if titles.empty?
+        flash.now[:alert] = "Enter at least one song title."
+        return render :new, status: :unprocessable_entity
+      end
+
+      added = 0
+      not_found = []
+      duplicates = []
+
+      titles.each do |title|
+        track = spotify_client.search_tracks(title, limit: 1).first
+        if track.present?
+          if add_track_to_builder(track)
+            added += 1
+          else
+            duplicates << track.name
+          end
+        else
+          not_found << title
+        end
+      end
+
+      notices = []
+      notices << "Added #{added} #{'song'.pluralize(added)}." if added.positive?
+      notices << "Skipped duplicates: #{duplicates.join(', ')}." if duplicates.any?
+      flash.now[:notice] = notices.join(" ") if notices.any?
+      flash.now[:alert] = "No matches for: #{not_found.join(', ')}." if not_found.any?
+      return render :new
+    end
+
+    # default to single add if the single button was used (or no button but query present)
+    if single_button || query.present?
+      if query.blank?
+        flash.now[:alert] = "Enter a song name to search and add."
+        return render :new, status: :unprocessable_entity
+      end
+    else
+      flash.now[:alert] = "Choose a song to add."
+      return render :new, status: :unprocessable_entity
     end
 
     begin
