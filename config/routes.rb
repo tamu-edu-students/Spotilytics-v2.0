@@ -26,13 +26,31 @@ Rails.application.routes.draw do
 
   resources :artist_follows, only: [ :create, :destroy ], param: :spotify_id
 
-  # GET /top_tracks
+  # GET /top_tracks (Merged from both branches)
   get "/top_tracks", to: "top_tracks#index", as: :top_tracks
   post "/top_tracks/hide", to: "top_tracks#hide", as: :hide_top_track
   post "/top_tracks/unhide", to: "top_tracks#unhide", as: :unhide_top_track
+
+  # Playlists (Merged from both branches)
   post "/create_playlist", to: "playlists#create", as: :create_playlist
   post "/create_playlist_from_recommendations", to: "playlists#create_from_recommendations", as: :create_playlist_from_recommendations
 
   # Get Recommendations
   get  "recommendations",        to: "recommendations#recommendations",   as: :recommendations
+
+  # Saved Shows & Episodes (From your feature branch)
+  resources :saved_shows, only: [ :index, :create, :destroy ] do
+    collection do
+      get :search
+    end
+  end
+
+  resources :saved_episodes, only: [ :index, :create, :destroy ] do
+    collection do
+      get :search
+    end
+  end
+
+  # Test Coverage Report (From your feature branch)
+  get "/coverage/*path", to: redirect("/coverage/%{path}")
 end

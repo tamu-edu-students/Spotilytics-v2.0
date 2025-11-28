@@ -9,6 +9,7 @@ require "set"
 
 class SpotifyClient
   API_ROOT = "https://api.spotify.com/v1"
+  # Client for interacting with Spotify Web API
   TOKEN_URI = URI("https://accounts.spotify.com/api/token").freeze
 
   class Error < StandardError; end
@@ -104,6 +105,139 @@ class SpotifyClient
         )
       end
     end
+  end
+
+  def saved_shows(limit: 20, offset: 0)
+    cache_for([ "saved_shows", limit, offset ]) do
+      access_token = ensure_access_token!
+      response = get("/me/shows", access_token, limit: limit, offset: offset)
+      items = response.fetch("items", [])
+
+      mapped_items = items.map do |item|
+        show = item["show"]
+        OpenStruct.new(
+          id: show["id"],
+          name: show["name"],
+          publisher: show["publisher"],
+          image_url: show.dig("images", 0, "url"),
+          description: show["description"],
+          spotify_url: show.dig("external_urls", "spotify"),
+          total_episodes: show["total_episodes"]
+        )
+      end
+
+      OpenStruct.new(items: mapped_items, total: response["total"] || 0)
+    end
+  end
+
+  def saved_episodes(limit: 20, offset: 0)
+    cache_for([ "saved_episodes", limit, offset ]) do
+      access_token = ensure_access_token!
+      response = get("/me/episodes", access_token, limit: limit, offset: offset)
+      items = response.fetch("items", [])
+
+      mapped_items = items.map do |item|
+        episode = item["episode"]
+        OpenStruct.new(
+          id: episode["id"],
+          name: episode["name"],
+          show_name: episode.dig("show", "name"),
+          image_url: episode.dig("images", 0, "url"),
+          description: episode["description"],
+          spotify_url: episode.dig("external_urls", "spotify"),
+          duration_ms: episode["duration_ms"],
+          release_date: episode["release_date"]
+        )
+      end
+
+      OpenStruct.new(items: mapped_items, total: response["total"] || 0)
+    end
+  end
+
+  def remove_shows(ids)
+    ids = Array(ids).map(&:to_s).uniq
+    return true if ids.empty?
+
+    access_token = ensure_access_token!
+    body = { ids: ids }
+    request_with_json(Net::HTTP::Delete, "/me/shows", access_token, params: { ids: ids.join(",") })
+    true
+  end
+
+  def remove_episodes(ids)
+    ids = Array(ids).map(&:to_s).uniq
+    return true if ids.empty?
+
+    access_token = ensure_access_token!
+    body = { ids: ids }
+    request_with_json(Net::HTTP::Delete, "/me/episodes", access_token, params: { ids: ids.join(",") })
+    true
+  end
+
+  def search_shows(query, limit: 20, offset: 0)
+    cache_for([ "search_shows", query, limit, offset ]) do
+      access_token = ensure_access_token!
+      params = { q: query, type: "show", limit: limit, offset: offset }
+      response = get("/search", access_token, params)
+      items = response.dig("shows", "items") || []
+      total = response.dig("shows", "total") || 0
+
+      mapped_items = items.map do |item|
+        OpenStruct.new(
+          id: item["id"],
+          name: item["name"],
+          publisher: item["publisher"],
+          image_url: item.dig("images", 0, "url"),
+          description: item["description"],
+          spotify_url: item.dig("external_urls", "spotify"),
+          total_episodes: item["total_episodes"]
+        )
+      end
+
+      OpenStruct.new(items: mapped_items, total: total)
+    end
+  end
+
+  def search_episodes(query, limit: 20, offset: 0)
+    cache_for([ "search_episodes", query, limit, offset ]) do
+      access_token = ensure_access_token!
+      params = { q: query, type: "episode", limit: limit, offset: offset }
+      response = get("/search", access_token, params)
+      items = response.dig("episodes", "items") || []
+      total = response.dig("episodes", "total") || 0
+
+      mapped_items = items.map do |item|
+        OpenStruct.new(
+          id: item["id"],
+          name: item["name"],
+          image_url: item.dig("images", 0, "url"),
+          description: item["description"],
+          spotify_url: item.dig("external_urls", "spotify"),
+          duration_ms: item["duration_ms"],
+          release_date: item["release_date"]
+        )
+      end
+
+      OpenStruct.new(items: mapped_items, total: total)
+    end
+  end
+
+  def save_shows(ids)
+    ids = Array(ids).map(&:to_s).uniq
+    return true if ids.empty?
+
+    access_token = ensure_access_token!
+    request_with_json(Net::HTTP::Put, "/me/shows", access_token, params: { ids: ids.join(",") })
+    true
+  end
+
+  def save_episodes(ids)
+    ids = Array(ids).map(&:to_s).uniq
+    return true if ids.empty?
+
+    access_token = ensure_access_token!
+    request_with_json(Net::HTTP::Put, "/me/episodes", access_token, params: { ids: ids.join(",") })
+    true
   end
 
 
