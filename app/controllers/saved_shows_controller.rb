@@ -93,13 +93,13 @@ class SavedShowsController < ApplicationController
     begin
       # Fetch target show details
       target_show = client.get_show(show_id)
-      
+
       # Fetch user's saved shows for context
       saved_shows = client.saved_shows(limit: 5).items
-      
+
       openai_service = OpenaiService.new
       @recommendation = openai_service.generate_recommendation(saved_shows, target_show.name, target_show.publisher)
-      
+
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to saved_shows_path, notice: "Recommendation generated." }
@@ -118,7 +118,7 @@ class SavedShowsController < ApplicationController
       target_show = client.get_show(show_id)
       openai_service = OpenaiService.new
       suggested_names = openai_service.suggest_similar_shows(target_show.name, target_show.publisher)
-      
+
       @similar_shows = []
       suggested_names.each do |name|
         # Search for each suggested show to get its Spotify details
@@ -141,11 +141,11 @@ class SavedShowsController < ApplicationController
 
   def bulk_recommendations
     client = SpotifyClient.new(session: session)
-    
+
     begin
       # Fetch last 10 saved shows for context
       saved_shows = client.saved_shows(limit: 10).items
-      
+
       if saved_shows.empty?
         @error = "You need to save some shows first!"
         @recommendations = []
@@ -153,10 +153,10 @@ class SavedShowsController < ApplicationController
       end
 
       show_names = saved_shows.map(&:name)
-      
+
       openai_service = OpenaiService.new
       suggested_names = openai_service.generate_bulk_recommendations(show_names, "podcasts")
-      
+
       @recommendations = []
       suggested_names.each do |name|
         results = client.search_shows(name, limit: 1)

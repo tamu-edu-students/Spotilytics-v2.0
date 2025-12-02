@@ -4,15 +4,15 @@ class SavedEpisodesController < ApplicationController
   def index
     client = SpotifyClient.new(session: session)
     @page = (params[:page] || 1).to_i
-    
+
     # If grouping by show, fetch more items to make grouping useful (effectively disabling pagination for now)
     # Otherwise, use standard pagination
     if params[:group_by] == "show"
-      @limit = 50 
+      @limit = 50
     else
       @limit = 5
     end
-    
+
     offset = (@page - 1) * @limit
 
     begin
@@ -105,10 +105,10 @@ class SavedEpisodesController < ApplicationController
     begin
       # Fetch episode details from Spotify to get title and description
       episode = client.get_episode(episode_id)
-      
+
       openai_service = OpenaiService.new
       @summary = openai_service.summarize_episode(episode.name, episode.description)
-      
+
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to saved_episodes_path, notice: "Summary generated." }
@@ -120,11 +120,11 @@ class SavedEpisodesController < ApplicationController
   end
   def bulk_recommendations
     client = SpotifyClient.new(session: session)
-    
+
     begin
       # Fetch last 10 saved episodes
       saved_episodes = client.saved_episodes(limit: 10).items
-      
+
       if saved_episodes.empty?
         @error = "You need to save some episodes first!"
         @recommendations = []
@@ -132,10 +132,10 @@ class SavedEpisodesController < ApplicationController
       end
 
       episode_names = saved_episodes.map(&:name)
-      
+
       openai_service = OpenaiService.new
       suggested_names = openai_service.generate_bulk_recommendations(episode_names, "podcast episodes")
-      
+
       @recommendations = []
       suggested_names.each do |name|
         results = client.search_episodes(name, limit: 1)
