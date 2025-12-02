@@ -139,6 +139,32 @@ RSpec.describe SpotifyClient do
     end
   end
 
+  describe "#get_episode" do
+    let(:response_body) do
+      { "id" => "e1", "name" => "Ep 1", "show" => { "name" => "S1" }, "duration_ms" => 60000 }
+    end
+
+    it "fetches a single episode" do
+      allow(http_ok).to receive(:body).and_return(response_body.to_json)
+      result = client.get_episode("e1")
+      expect(result.name).to eq("Ep 1")
+      expect(result.show_name).to eq("S1")
+    end
+  end
+
+  describe "#get_show" do
+    let(:response_body) do
+      { "id" => "s1", "name" => "Show 1", "publisher" => "Pub", "total_episodes" => 10 }
+    end
+
+    it "fetches a single show" do
+      allow(http_ok).to receive(:body).and_return(response_body.to_json)
+      result = client.get_show("s1")
+      expect(result.name).to eq("Show 1")
+      expect(result.publisher).to eq("Pub")
+    end
+  end
+
   describe "#top_artists" do
     let(:response_body) { { "items" => [ { "id" => "ta1", "name" => "Top Art", "popularity" => 100 } ] } }
 

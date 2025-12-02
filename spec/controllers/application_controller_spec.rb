@@ -105,4 +105,38 @@ RSpec.describe ApplicationController, type: :controller do
       end
     end
   end
+  describe "#hidden_top_tracks_for_user" do
+    it "returns default structure for new user" do
+      expect(controller.hidden_top_tracks_for_user("u1")).to eq({
+        "short_term" => [],
+        "medium_term" => [],
+        "long_term" => []
+      })
+    end
+
+    it "returns empty hash if no user_id" do
+      expect(controller.hidden_top_tracks_for_user(nil)).to eq({})
+    end
+  end
+
+  describe "#add_hidden_top_track" do
+    it "adds a track to the list" do
+      controller.add_hidden_top_track("short_term", "t1", "u1")
+      expect(controller.hidden_top_tracks_for_user("u1")["short_term"]).to include("t1")
+    end
+
+    it "returns false if limit reached (5)" do
+      5.times { |i| controller.add_hidden_top_track("short_term", "t#{i}", "u1") }
+      expect(controller.add_hidden_top_track("short_term", "t6", "u1")).to be false
+      expect(controller.hidden_top_tracks_for_user("u1")["short_term"].size).to eq(5)
+    end
+  end
+
+  describe "#remove_hidden_top_track" do
+    it "removes a track" do
+      controller.add_hidden_top_track("short_term", "t1", "u1")
+      controller.remove_hidden_top_track("short_term", "t1", "u1")
+      expect(controller.hidden_top_tracks_for_user("u1")["short_term"]).to be_empty
+    end
+  end
 end
