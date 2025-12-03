@@ -46,6 +46,7 @@ gem "thruster", require: false
 gem "omniauth", "~> 2.1"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 gem "rspotify", "~> 2.11"
+gem "ruby-openai"
 
 gem "dotenv-rails", groups: [ :development, :test ]
 
