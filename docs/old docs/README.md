@@ -9,10 +9,10 @@ The app uses Spotify OAuth 2.0 authentication via the official Spotify Developer
 
 ## Useful URLs
 
-- **Heroku Dashboard:** [https://spotilytics-version2-c80381d23acb.herokuapp.com/home](https://spotilytics-version2-c80381d23acb.herokuapp.com/home)
-- **GitHub Projects Dashboard:** [https://github.com/orgs/tamu-edu-students/projects/176](https://github.com/orgs/tamu-edu-students/projects/176)
+- **Heroku Dashboard:** [https://spotilytics-app-41dbe947e18e.herokuapp.com/home](https://spotilytics-app-41dbe947e18e.herokuapp.com/home)
+- **GitHub Projects Dashboard:** [https://github.com/orgs/tamu-edu-students/projects/154](https://github.com/orgs/tamu-edu-students/projects/154)
 - **Burn up chart** [https://github.com/orgs/tamu-edu-students/projects/154/insights](https://github.com/orgs/tamu-edu-students/projects/154/insights)
-- **Slack Group** (to track Scrum Events) - #csce606-proj2-group1 - [https://tamu.slack.com/archives/C09RYTFDDFX](https://tamu.slack.com/archives/C09RYTFDDFX)
+- **Slack Group** (to track Scrum Events) - #csce606-proj2-group1 - [https://tamu.slack.com/archives/C09KM1BV4TW](https://tamu.slack.com/archives/C09KM1BV4TW)
 
 
 ## Features
@@ -42,17 +42,6 @@ The app uses Spotify OAuth 2.0 authentication via the official Spotify Developer
 7. Playlist Creation:
 	- Create new Spotify playlists from your top tracks for any time range
 	- Automatically name and describe playlists (e.g., “Your Top Tracks – Last 6 Months”)
-8. Recommendations Tab:
-    - Personalized track and album recommendations based on your listening history
-    - Create playlists from recommended songs
-9. Custom Playist Creation:
-    - Import your top tracks into a new Spotify playlist with a single click
-    - Upload a CSV file of song and artist data to create a playlist
-    - Add songs individually or add a list of songs
-    - Review the playlist before saving it to your Spotify account
-10. Customize your Dashboard:
-    - Hide or show specific songs on your Top Tracks list
-    
 
 ## Getting Started — From Zero to Deployed
 
