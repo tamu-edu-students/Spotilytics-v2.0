@@ -94,7 +94,7 @@ RSpec.describe "Additional coverage", type: :controller do
 
     it "stores user id in session when creating a playlist" do
       allow(client).to receive(:current_user_id).and_return("user-abc")
-      allow(client).to receive(:top_tracks).and_return([OpenStruct.new(id: "t1")])
+      allow(client).to receive(:top_tracks).and_return([ OpenStruct.new(id: "t1") ])
       allow(client).to receive(:create_playlist_for).and_return("pl-1")
       allow(client).to receive(:add_tracks_to_playlist).and_return(true)
 
@@ -109,7 +109,7 @@ RSpec.describe "Additional coverage", type: :controller do
       allow(client).to receive(:create_playlist_for).and_return("pl-2")
       allow(client).to receive(:add_tracks_to_playlist).and_return(true)
 
-      post :create_from_recommendations, params: { uris: ["spotify:track:1"] }
+      post :create_from_recommendations, params: { uris: [ "spotify:track:1" ] }
 
       expect(session[:spotify_user]["id"]).to eq("user-xyz")
       expect(response).to redirect_to(recommendations_path)
@@ -125,7 +125,7 @@ RSpec.describe "Additional coverage", type: :controller do
 
       session[:spotify_user] = SessionProxy.new
       allow(client).to receive(:current_user_id).and_return("user-proxy")
-      allow(client).to receive(:top_tracks).and_return([OpenStruct.new(id: "t1")])
+      allow(client).to receive(:top_tracks).and_return([ OpenStruct.new(id: "t1") ])
       allow(client).to receive(:create_playlist_for).and_return("pl-3")
       allow(client).to receive(:add_tracks_to_playlist).and_return(true)
 
@@ -140,7 +140,7 @@ RSpec.describe "Additional coverage", type: :controller do
       allow(client).to receive(:create_playlist_for).and_return("pl-4")
       allow(client).to receive(:add_tracks_to_playlist).and_return(true)
 
-      post :create_from_recommendations, params: { uris: ["spotify:track:3"] }
+      post :create_from_recommendations, params: { uris: [ "spotify:track:3" ] }
 
       expect(session[:spotify_user]["id"]).to eq("user-fallback")
     end
@@ -158,7 +158,7 @@ RSpec.describe "Additional coverage", type: :controller do
 
     it "adds a single song and sets notice" do
       track = OpenStruct.new(id: "t1", name: "Song", artists: "Artist")
-      allow(client).to receive(:search_tracks).and_return([track])
+      allow(client).to receive(:search_tracks).and_return([ track ])
 
       post :add_song, params: { single_add: "1", song_query: "Song" }
 
@@ -168,7 +168,7 @@ RSpec.describe "Additional coverage", type: :controller do
 
     it "sets notice when adding a duplicate track" do
       track = OpenStruct.new(id: "t2", name: "Song 2", artists: "Artist")
-      allow(client).to receive(:search_tracks).and_return([track])
+      allow(client).to receive(:search_tracks).and_return([ track ])
       allow(controller).to receive(:add_track_to_builder).and_return(false)
 
       post :add_song, params: { single_add: "1", song_query: "Song 2" }
@@ -255,15 +255,15 @@ RSpec.describe "Additional coverage", type: :controller do
       allow(client).to receive(:top_tracks) do
         call += 1
         case call
-        when 1 then [OpenStruct.new(id: "s1")]
-        when 2 then [OpenStruct.new(id: "m1")]
-        when 3 then [OpenStruct.new(id: "l1")]
+        when 1 then [ OpenStruct.new(id: "s1") ]
+        when 2 then [ OpenStruct.new(id: "m1") ]
+        when 3 then [ OpenStruct.new(id: "l1") ]
         else
           raise SpotifyClient::Error.new("boom")
         end
       end
 
-      session[:hidden_top_tracks] = { "user-1" => { "short_term" => ["x"], "medium_term" => [], "long_term" => [] } }
+      session[:hidden_top_tracks] = { "user-1" => { "short_term" => [ "x" ], "medium_term" => [], "long_term" => [] } }
 
       get :index
 

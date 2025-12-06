@@ -1,6 +1,7 @@
 require "securerandom"
 
 Given("Spotify playlists API returns the following playlists:") do |table|
+  Rails.cache.clear
   stub_spotify_me_profile
 
   items = table.hashes.map do |row|
@@ -22,10 +23,11 @@ Given("Spotify playlists API returns the following playlists:") do |table|
 end
 
 Given("Spotify playlists API returns an error") do
+  Rails.cache.clear
   stub_spotify_me_profile
 
   stub_request(:get, %r{\Ahttps://api\.spotify\.com/v1/me/playlists})
-    .to_return(status: 401, body: JSON.generate(error: { message: "Invalid token" }), headers: { "Content-Type" => "application/json" })
+    .to_return(status: 500, body: JSON.generate(error: { message: "Internal error" }), headers: { "Content-Type" => "application/json" })
 end
 
 Given('Spotify playlist rename API succeeds for {string}') do |playlist_id|
