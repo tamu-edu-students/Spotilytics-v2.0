@@ -8,7 +8,7 @@ flowchart LR
 
   subgraph Rails["Rails Server"]
     Session["session[:spotify_user]<br/>{ id, display_name, token, refresh_token, expires_at }"]
-    Pages["Controllers<br/>(Pages / TopTracks / Playlists)"]
+    Pages["Controllers<br/>Pages / TopTracks / TopArtists / Library / Playlists / SavedShows / SavedEpisodes / Recommendations"]
     Client["SpotifyClient"]
     CacheAPI["Rails.cache (redis_cache_store)"]
   end
@@ -44,3 +44,6 @@ flowchart LR
   CacheAPI -- "Cache miss → Fetch from Spotify API" --> Client
   Client -- "GET / POST" --> API
   Client -- "Store API result" --> CacheAPI
+
+  %% Library refresh after mutations
+  Pages -- "Library page can request skip_cache when refreshing playlists" --> Client
