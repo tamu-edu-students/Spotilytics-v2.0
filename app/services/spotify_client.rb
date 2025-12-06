@@ -110,6 +110,48 @@ class SpotifyClient
     end
   end
 
+  def user_playlists(limit: 50, offset: 0, skip_cache: false)
+    fetch_block = proc do
+      access_token = ensure_access_token!
+      response = get("/me/playlists", access_token, limit: limit, offset: offset)
+      items = response.fetch("items", [])
+
+      items.map do |item|
+        OpenStruct.new(
+          id: item["id"],
+          name: item["name"],
+          image_url: item.dig("images", 0, "url"),
+          owner: item.dig("owner", "display_name") || item.dig("owner", "id"),
+          owner_id: item.dig("owner", "id"),
+          description: item["description"],
+          collaborative: item["collaborative"],
+          public: item["public"],
+          tracks_total: item.dig("tracks", "total") || 0,
+          spotify_url: item.dig("external_urls", "spotify")
+        )
+      end
+    end
+
+    return fetch_block.call if skip_cache
+
+    cache_for([ "user_playlists", limit, offset ]) { fetch_block.call }
+  end
+
+  def user_playlists_all(page_size: 50, skip_cache: false)
+    all_items = []
+    offset = 0
+
+    loop do
+      batch = user_playlists(limit: page_size, offset: offset, skip_cache: skip_cache)
+      all_items.concat(batch)
+      break if batch.size < page_size
+
+      offset += page_size
+    end
+
+    all_items
+  end
+
   def saved_shows(limit: 20, offset: 0)
     cache_for([ "saved_shows", limit, offset ]) do
       access_token = ensure_access_token!
@@ -409,6 +451,28 @@ class SpotifyClient
     post_json("/playlists/#{playlist_id}/tracks", access_token, payload)
     true
   end
+
+  def update_playlist_name(playlist_id:, name:)
+    access_token = ensure_access_token!
+    payload = { name: name }
+    request_with_json(Net::HTTP::Put, "/playlists/#{playlist_id}", access_token, body: payload)
+    true
+  end
+
+  def update_playlist_description(playlist_id:, description:)
+    access_token = ensure_access_token!
+    body = { description: description.to_s }
+    request_with_json(Net::HTTP::Put, "/playlists/#{playlist_id}", access_token, body: body)
+    true
+  end
+
+  def update_playlist_collaborative(playlist_id:, collaborative:)
+    access_token = ensure_access_token!
+    body = { collaborative: !!collaborative }
+    request_with_json(Net::HTTP::Put, "/playlists/#{playlist_id}", access_token, body: body)
+    true
+  end
+
 
   def clear_user_cache
     user_id = current_user_id

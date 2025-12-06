@@ -2,7 +2,7 @@ require "set"
 
 class PagesController < ApplicationController
   # MERGE: Added :top_tracks from main to the list
-  before_action :require_spotify_auth!, only: %i[dashboard top_artists top_tracks view_profile clear]
+  before_action :require_spotify_auth!, only: %i[dashboard top_artists top_tracks view_profile clear library]
 
   TOP_ARTIST_TIME_RANGES = [
     { key: "long_term", label: "Past Year" },
@@ -127,6 +127,17 @@ class PagesController < ApplicationController
     @top_tracks = []
   end
 
+  def library
+    refresh = params[:refresh_playlists].present?
+    @playlists = fetch_user_playlists_all(refresh: refresh)
+  rescue SpotifyClient::UnauthorizedError
+    redirect_to home_path, alert: "You must log in with spotify to view your library." and return
+  rescue SpotifyClient::Error => e
+    Rails.logger.warn "Failed to fetch Spotify playlists: #{e.message}"
+    flash.now[:alert] = "We were unable to load your playlists from Spotify. Please try again later."
+    @playlists = []
+  end
+
   private
 
   def spotify_client
@@ -163,6 +174,14 @@ class PagesController < ApplicationController
 
   def fetch_followed_artists(limit:)
     spotify_client.followed_artists(limit: limit)
+  end
+
+  def fetch_user_playlists(limit:, offset: 0)
+    spotify_client.user_playlists(limit: limit, offset: offset)
+  end
+
+  def fetch_user_playlists_all(refresh: false)
+    spotify_client.user_playlists_all(skip_cache: refresh)
   end
 
   # MERGE: Added these methods from feat/save-episodes-and-shows

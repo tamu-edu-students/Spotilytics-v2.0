@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   get "/home", to: "pages#home", as: :home
   get "/view-profile", to: "pages#view_profile", as: :view_profile
   get "/clear", to: "pages#clear", as: :clear
+  get "/library", to: "pages#library", as: :library
   root "pages#home"
 
   # Callback from Spotify
@@ -36,6 +37,9 @@ Rails.application.routes.draw do
   post "/create_playlist_from_recommendations", to: "playlists#create_from_recommendations", as: :create_playlist_from_recommendations
   get "/playlists/new", to: "playlists#new", as: :new_playlist
   post "/playlists/add_song", to: "playlists#add_song", as: :add_playlist_song
+  patch "/playlists/:id/rename", to: "playlists#rename", as: :rename_playlist
+  patch "/playlists/:id/description", to: "playlists#update_description", as: :playlist_description
+  patch "/playlists/:id/collaborative", to: "playlists#update_collaborative", as: :playlist_collaborative
   post "/playlists/custom", to: "playlists#create_custom", as: :create_custom_playlist
 
   # Get Recommendations
